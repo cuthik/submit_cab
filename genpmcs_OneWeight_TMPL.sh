@@ -10,7 +10,7 @@
 ## @date 2014-03-17
 
 #PBS -N genpmcs_GENPROCESS_SAMPLENAME_RANDOMSEED
-#PBS -q sam_lo@d0cabsrv1
+#PBS -q sam_lo@d0cabsrvNODENUM
 #  #PBS -j oe
 # #PBS -k oe
 #PBS -k n
