@@ -26,10 +26,11 @@ outdir=/prj_root/7056/wmass2/jcuth/cabout_genpmcs
 
 intemplate=$resbosintface/input/resbos_wp_tev2_sigma_templateBIGhalf.in
 #intemplate=$resbosintface/input/resbos_wp_tev2_sigma_templateSMALL.in
-if [[ GENPROCESS == *local* ]]
+#if [[ GENPROCESS == *local* ]]
+if [ -z "${PBS_JOBID}" ];
 then
     intemplate=$resbosintface/input/resbos_wp_tev2_sigma_templateSMALL.in
-    intemplate=$resbosintface/input/resbos_wp_tev2_sigma_templateBIGhalf.in
+    #intemplate=$resbosintface/input/resbos_wp_tev2_sigma_templateBIGhalf.in
 fi
 
 
@@ -71,7 +72,8 @@ Run_resbos(){
     then
         wgt=-1
     else
-        if [[ GENPROCESS == *local* ]];
+        #if [[ GENPROCESS == *local* ]];
+        if [ -z "${PBS_JOBID}" ];
         then
             $CP $outdir/weight_GENPROCESS_`echo CENTRAL| sed "s|\.||g"`_RANDOMSEED.dat .
         else
@@ -98,7 +100,8 @@ Run_resbos(){
     #save 
     if [[ MAIN == *CENTRAL* ]]
     then
-        if [[ GENPROCESS == *local* ]];
+        #if [[ GENPROCESS == *local* ]];
+        if [ -z "${PBS_JOBID}" ];
         then
             # put on group disk
             $CP weights.dat $outdir/weight_GENPROCESS_SAMPLENAME_RANDOMSEED.dat
@@ -219,6 +222,7 @@ Convert_weight_and_upload(){
     pwd >> tupleMaker.log
     # setup env
     setup D0RunII p21.26.00 -O SRT_QUAL=maxopt
+    source /prj_root/7055/wmass2/jcuth/DYRES/root/bin/thisroot.sh
     # get all files
     mv weights.txt weight_GENPROCESS_SAMPLENAME_RANDOMSEED.txt
     if [[ MAIN == *CENTRAL* ]]
@@ -247,7 +251,8 @@ Convert_weight_and_upload(){
     ./tupleMaker3 -c weight_GENPROCESS_SAMPLENAME_RANDOMSEED.root weights >> tupleMaker.log
 
     # save
-    if [[ GENPROCESS == *local* ]];
+    #if [[ GENPROCESS == *local* ]];
+    if [ -z "${PBS_JOBID}" ];
     then
         # put on group disk
         $CP weight_GENPROCESS_SAMPLENAME_RANDOMSEED.root $outdir/weight_GENPROCESS_SAMPLENAME_RANDOMSEED.root
@@ -277,9 +282,11 @@ Run_tuple_maker(){
     pwd >> tupleMaker.log
     # setup env
     setup D0RunII p21.26.00 -O SRT_QUAL=maxopt
+    source /prj_root/7055/wmass2/jcuth/DYRES/root/bin/thisroot.sh
 
     # get central hep file
-    if [[ GENPROCESS == *local* ]]
+    #if [[ GENPROCESS == *local* ]]
+    if [ -z "${PBS_JOBID}" ];
     then
         ln -sf $outdir/GENPROCESS_CENTRAL_RANDOMSEED.hep
     else
@@ -311,13 +318,16 @@ Run_tuple_maker(){
 
 
     # for all non central weights
-    for main in `ls -1 GRIDDIR | grep w321 | grep -v .CENTRAL.`
+    #for main in `ls -1 GRIDDIR | grep w321 | grep -v .CENTRAL.`
+    for main in `ls -1 GRIDDIR | grep w321 | grep w+ | grep -v "_CENTRAL_"`;
     do
         mainBase=`basename $main .out`
-        sampleName=`echo $mainBase | rev | cut -d. -f1 | rev`
+        #sampleName=`echo $mainBase | rev | cut -d. -f1 | rev`
+        sampleName=`echo $mainBase | grep -o "tev2_\(pmcs\)\{0,1\}[0-9]\{2\}"`
         echo weight_GENPROCESS_${sampleName}_RANDOMSEED.root
         # link weight file
-        if [[ GENPROCESS == *local* ]];
+        #if [[ GENPROCESS == *local* ]];
+        if [ -z "${PBS_JOBID}" ];
         then
             ln -sf $outdir/weight_GENPROCESS_${sampleName}_RANDOMSEED.root
             THEFILE=`readlink weight_GENPROCESS_${sampleName}_RANDOMSEED.root`
@@ -343,7 +353,8 @@ Run_tuple_maker(){
         do
             ls -l $i
             file $i
-            if [[ GENPROCESS == *local* ]]
+            #if [[ GENPROCESS == *local* ]]
+            if [ -z "${PBS_JOBID}" ];
             then
                 ARGLIST="$ARGLIST $i"
             else
@@ -424,7 +435,8 @@ Delete_weights(){
     for main in `ls -1 GRIDDIR | grep w321 | grep -v .CENTRAL.`
     do
         mainBase=`basename $main .out`
-        sampleName=`echo $mainBase | rev | cut -d. -f1 | rev`
+        #sampleName=`echo $mainBase | rev | cut -d. -f1 | rev`
+        sampleName=`echo $mainBase | grep -o "tev2_\(pmcs\)\{0,1\}[0-9]\{2\}"`
         rm -f $outdir/weight_GENPROCESS_${sampleName}_RANDOMSEED.root
     done
 
@@ -434,7 +446,8 @@ Delete_weights(){
 
 # WORK PLACE
 WORKAREA=/scratch/${PBS_JOBID}
-if [[ GENPROCESS == *local* ]];
+#if [[ GENPROCESS == *local* ]];
+if [ -z "${PBS_JOBID}" ];
 then
     WORKAREA=`pwd`
 fi
@@ -444,7 +457,8 @@ cd $WORKAREA
 
 
 # ENVIRONMENT
-if [[ GENPROCESS == *local* ]];
+#if [[ GENPROCESS == *local* ]];
+if [ -z "${PBS_JOBID}" ];
 then
     source /D0/ups/etc/setups.sh
 else
@@ -476,11 +490,12 @@ if [[ SAMPLENAME == *pmcs* ]]
 then
     $CP /prj_root/7055/wmass2/jcuth/epmcs_newIII.tgz .
     #tar -xzv --keep-newer-files -f epmcs_newTrig.tgz
-    if [[ GENPROCESS == *local* ]]
+    #if [[ GENPROCESS == *local* ]]
+    if [ -z "${PBS_JOBID}" ];
     then
         #tar xzvf epmcs_newTrig.tgz
-        tar xzvf epmcs_newIII.tgz
-        #echo not extracting
+        #tar xzvf epmcs_newIII.tgz
+        echo not extracting
     else
         #tar xzvf epmcs_newTrig.tgz
         tar xzvf epmcs_newIII.tgz

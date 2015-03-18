@@ -9,7 +9,7 @@
 ## @date 2014-02-20
 
 DRYRUN="echo "
-DRYRUN=
+#DRYRUN=
 
 QSUB=/usr/bin/qsub
 
@@ -52,14 +52,16 @@ central=00
 # ONE JOB
 prepare_script(){
     mainBase=`basename $main .out`
-    ykBase=`echo $mainBase | sed "s|w321|yk|g"`
+    ykBase=`echo $mainBase | sed "s|w321|y|g;s|kn00_||g"`
+    #echo $gridDir $ykBase
     #sampleName=`echo $mainBase | rev | cut -d. -f1 | rev`
     sampleName=`echo $mainBase | grep -o "tev2_\(pmcs\)\{0,1\}[0-9]\{2\}"`
+    centralSampleName=tev2_$central
     outName=genpmcs_${process}_${sampleName}_${randomseed}
-    #echo " process ${process} sampleName ${sampleName} randomseed ${randomseed} "
+    echo " ----- DUMP  process ${process} sampleName ${sampleName} randomseed ${randomseed}  central $central centralSampleName $centralSampleName"
     cat $SCRIPTNAME.sh | sed "s|MAIN|$gridDir/$mainBase.out|g;
                               s|YK|$gridDir/$ykBase.out|g;
-                              s|CENTRAL|_$central|g;
+                              s|CENTRAL|$centralSampleName|g;
                               s|NODENUM|$nodenum|g;
                               s|GRIDDIR|$gridDir|g;
                               s|GENPROCESS|$process|g;
@@ -110,9 +112,9 @@ setup_local(){
 # 1020000 - cteq66
 # 1010000 - 1sigma
 chain_job(){
-    for i in $seedlist
-    do
-        randomseed=$(($i+1010000))
+  for i in $seedlist
+  do
+      randomseed=$(($i+1010000))
         ###### submit central
         outName="empty"
         #main=`ls -1 $gridDir | grep w321 | grep ".${central}."`
